@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hidrate-se Yasmin!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: #007BFF;
+            color: white;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Olá, Yasmin! Aqui está um lembrete para que você se hidrate! Vamo cuidar dessa saúde aí.</h1>
+    </header>
+    <div class="container">
+        <p><strong>Quantidade bebida hoje (ml):</strong> <span id="current-intake">0</span> / 2000</p>
+        <p id="motivation-message">Clique no botão abaixo para adicionar copos e veja uma mensagem motivacional!</p>
+        <button id="add-cup">Adicione 1 (um) copo</button>
+        <audio id="success-sound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Dia</th>
+                    <th>Quantidade Bebida (ml)</th>
+                </tr>
+            </thead>
+            <tbody id="weekly-progress">
+                <!-- Preenchido dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const DAILY_GOAL = 2000; // Meta diária em ml
+        const CUP_SIZE = 200; // Tamanho de um copo em ml
+        const messages = [
+            "Não deixe de beber sua cerveja no fds, tome água hoje! 🍺",
+            "Seus roxos não são nada comparado a uma pedra nos rins, vai tomar água muié! 🎉",
+            "Água mole, pedra dura, tanto bate até que é nóis kkkkkkkkk. 😂",
+            "Frase motivacional: Vai tomar água moço 😒",
+            "Isso aí, tá mais perto de sair do péssimo para o ruim, parabéns!! 🤡"
+        ];
+
+        let dailyIntake = 0;
+        const currentDate = new Date();
+        const currentDay = currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+        const weeklyProgress = JSON.parse(localStorage.getItem('weeklyProgress')) || {};
+
+        // Atualiza tabela semanal
+        function updateWeeklyProgress() {
+            const tbody = document.getElementById('weekly-progress');
+            tbody.innerHTML = '';
+
+            Object.keys(weeklyProgress).forEach(day => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${day}</td><td>${weeklyProgress[day]} ml</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Adiciona um copo
+        document.getElementById('add-cup').addEventListener('click', () => {
+            dailyIntake += CUP_SIZE;
+            document.getElementById('current-intake').textContent = dailyIntake;
+
+            // Exibe mensagem motivacional
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById('motivation-message').textContent = randomMessage;
+
+            // Salva progresso diário
+            weeklyProgress[currentDay] = dailyIntake;
+            localStorage.setItem('weeklyProgress', JSON.stringify(weeklyProgress));
+
+            // Atualiza tabela semanal
+            updateWeeklyProgress();
+
+            // Som de conquista ao atingir a meta
+            if (dailyIntake >= DAILY_GOAL) {
+                document.getElementById('success-sound').play();
+                alert('Parabéns! Você atingiu sua meta diária de hidratação!');
+            }
+        });
+
+        // Reseta o progresso diariamente
+        if (!weeklyProgress[currentDay]) {
+            dailyIntake = 0;
+            document.getElementById('current-intake').textContent = dailyIntake;
+        } else {
+            dailyIntake = weeklyProgress[currentDay];
+            document.getElementById('current-intake').textContent = dailyIntake;
+        }
+
+        // Notificação de ausência
+        const yesterday = new Date();
+        yesterday.setDate(currentDate.getDate() - 1);
+        const yesterdayFormatted = yesterday.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        if (!weeklyProgress[yesterdayFormatted] && Object.keys(weeklyProgress).length > 0) {
+            alert('Você não acessou o site ontem! Não se esqueça de se hidratar todos os dias!');
+        }
+
+        updateWeeklyProgress();
+    </script>
+</body>
+</html>
